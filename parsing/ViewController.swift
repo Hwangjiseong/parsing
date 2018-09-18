@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, XMLParserDelegate {
+class ViewController: UIViewController, XMLParserDelegate, UITableViewDelegate,UITableViewDataSource {
     
     //딕셔너리 배열
     var elements : [[String:String]] = []
@@ -21,32 +21,54 @@ class ViewController: UIViewController, XMLParserDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let path = Bundle.main.url(forResource: "Fruit", withExtension: "xml") {
-            if let myParser = XMLParser(contentsOf: path) {
-                // XMLParserDelegate와 ViewController와 connection
-                myParser.delegate = self
+//        if let path = Bundle.main.url(forResource: "Fruit", withExtension: "xml") {
+//            if let myParser = XMLParser(contentsOf: path) {
+//                // XMLParserDelegate와 ViewController와 connection
+//                myParser.delegate = self
+//
+//                if myParser.parse() {
+//                    print("Parsing succed!")
+//                    print(elements)
+//                } else {
+//                    print("Parsing failed!")
+//                }
+//
+//            } else {
+//                print("parser nil")
+//            }
+//        } else {
+//            print("XML file not found!")
+//        }
+//
+//    }
+        
+        let strURL = "http://api.androidhive.info/pizza/?format=xml"
+        if NSURL(string: strURL) != nil {
+            if let parser = XMLParser(contentsOf: NSURL(string: strURL)! as URL) {
+                parser.delegate = self
                 
-                if myParser.parse() {
-                    print("Parsing succed!")
+                if parser.parse() {
+                    print("parsing success")
                     print(elements)
                 } else {
-                    print("Parsing failed!")
+                    print("parsing fail")
                 }
                 
-            } else {
-                print("parser nil")
             }
-        } else {
-            print("XML file not found!")
         }
         
+        myTableView.delegate = self
+        myTableView.dataSource = self
+        
+
     }
     
     //XMLParserDelegate 메소드 호출
     //1. tag(element)fmf 만났을때 호출
+    @IBOutlet weak var myTableView: UITableView!
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         currentElement = elementName
-        print("currentElement = \(currentElement)")
+        //print("currentElement = \(currentElement)")
     }
     //2. 문자열을 만났을때 호출
     func parser(_ parser: XMLParser, foundCharacters string: String) {
@@ -62,4 +84,18 @@ class ViewController: UIViewController, XMLParserDelegate {
         }
         
     }
+    // TableVeiw Delegate 메소드 호출
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return elements.count
+    }
+    
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath : IndexPath) -> UITableViewCell
+        {
+        let myCell = myTableView.dequeueReusableCell(withIdentifier: "RE", for: indexPath)
+        let myItem = elements[indexPath.row]
+            myCell.textLabel?.text = "Name : " + myItem["name"]!
+            myCell.detailTextLabel?.text = "Cost : " + myItem["cost"]!
+        return myCell
+    }
 }
+
